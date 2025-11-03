@@ -26,6 +26,7 @@ go version
 ```
 
 # Structure du projet
+```bash
 Mini-CRM/
 │
 ├── main.go               # Point d’entrée de l’application
@@ -35,7 +36,7 @@ Mini-CRM/
 │   └── crudContact.go    # Logique CRUD et gestion de la map users
 └── user/
     └── user.go           # Définition de la struct User
-
+```
 # Exécution normale
 go run .
 
@@ -51,33 +52,39 @@ go run .
 
 ## Ajout utilisateur 
 ### Ajout normal
+```bash
 1️⃣ Ajouter un contact
 → Entrer le nom :
 → Entrer l’email :
 ✅ Contact ajouté !
+```
 
 ### Ajout depuis flag
+```bash
 go run . -name "test" -email "test@mail.com"
+```
 
 ## Liste des utilisateurs
 ### Liste normale
+```bash
 2️⃣ Lister les contacts
 📋 Liste des utilisateurs :
 ID: 1 | Nom: Alice | Email: alice@mail.com
 ID: 2 | Nom: Bob   | Email: bob@mail.com
-
-### Liste depuis flag
-go run . -userList
+```
 
 ## Update utilisateur 
+```bash
 3️⃣ Mettre à jour un contact
 → Entrer l’ID du contact à modifier :
 → Entrer le nouveau nom :
 → Entrer le nouvel email :
 ✅ Utilisateur avec l’ID 1 mis à jour avec succès
+```
 
 ## Delete utilisateur 
+```bash
 4️⃣ Supprimer un contact
 → Entrer l’ID du contact à supprimer :
 ✅ Utilisateur avec l’ID 2 supprimé avec succès
-
+```
