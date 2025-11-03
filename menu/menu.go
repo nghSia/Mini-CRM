@@ -33,7 +33,7 @@ func DisplayMenu() {
 			i_userMail, _ := reader.ReadString('\n')
 			i_userMail = strings.TrimSpace(i_userMail)
 			newUser := user.User{Name: i_username, Email: i_userMail}
-			crudcontact.Add(newUser)
+			crudcontact.AddUser(newUser)
 		case 2:
 			crudcontact.GetUsers()
 		case 3:
@@ -46,6 +46,22 @@ func DisplayMenu() {
 				continue
 			}
 			crudcontact.DeleteUser(i_index)
+		case 4:
+			fmt.Print("Entrez l'Id d'utilisateur a mettre a jour : ")
+			i_indexStr, _ := reader.ReadString('\n')
+			i_indexStr = strings.TrimSpace(i_indexStr)
+			i_index, err := strconv.Atoi(i_indexStr)
+			if err != nil {
+				fmt.Println("❌ Id invalide, veuillez entrer un nombre entier.")
+				continue
+			}
+			fmt.Print("Entrez le nouveau nom : ")
+			i_name, _ := reader.ReadString('\n')
+			i_name = strings.TrimSpace(i_name)
+			fmt.Print("Entrez le nouveau mail : ")
+			i_email, _ := reader.ReadString('\n')
+			i_email = strings.TrimSpace(i_email)
+			crudcontact.UpdateUser(i_index, user.User{Name: i_name, Email: i_email})
 		case 5:
 			fmt.Println("Fermeture...")
 			return

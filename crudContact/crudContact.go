@@ -22,10 +22,24 @@ func GetUsers() {
 	}
 }
 
-func Add(p_user user.User) {
+func AddUser(p_user user.User) {
 	nextID++
 	p_user.Id = nextID
 	ListUsers[p_user.Id] = p_user
+}
+
+func UpdateUser(p_id int, p_user user.User) {
+	_, exists := ListUsers[p_id]
+
+	if !exists {
+		fmt.Printf("❌ Aucun utilisateur trouvé avec l’ID %d\n", p_id)
+		return
+	}
+
+	p_user.Id = p_id
+	ListUsers[p_id] = p_user
+
+	fmt.Printf("✅ Utilisateur avec l’ID %d mis à jour avec succès\n", p_id)
 }
 
 func DeleteUser(p_id int) {
