@@ -6,9 +6,10 @@ import (
 	"os"
 	"strconv"
 	"strings"
-)
 
-type UserChoice uint8
+	crudcontact "github.com/nghSia/Mini-CRM/crudContact"
+	"github.com/nghSia/Mini-CRM/user"
+)
 
 // DisplayMenu affiche le menu principal de l'application
 func DisplayMenu() {
@@ -22,10 +23,24 @@ func DisplayMenu() {
 		fmt.Println("5) Quitter l'application")
 
 		choice := readInt(reader, "Entrez vos choix : ")
-		fmt.Println("choix : ", choice)
-		if choice == 5 {
+
+		switch choice {
+		case 1:
+			fmt.Print("Entrez nom utilisateur : ")
+			i_username, _ := reader.ReadString('\n')
+			i_username = strings.TrimSpace(i_username)
+			fmt.Print("Entrez le mail utilisateur : ")
+			i_userMail, _ := reader.ReadString('\n')
+			i_userMail = strings.TrimSpace(i_userMail)
+			newUser := user.User{Name: i_username, Email: i_userMail}
+			crudcontact.Add(newUser)
+		case 2:
+			crudcontact.GetUsers()
+		case 5:
 			fmt.Println("Fermeture...")
 			return
+		default:
+			fmt.Println(choice)
 		}
 	}
 }
@@ -47,7 +62,6 @@ func readInt(reader *bufio.Reader, inputMessage string) int {
 			fmt.Println("❌ Veuillez entrer un nombre entre 1 et 5.")
 			continue
 		}
-
 		return value
 	}
 }
