@@ -1,7 +1,7 @@
 package main
 
-import "fmt"
+import "github.com/nghSia/Mini-CRM/menu"
 
 func main() {
-	fmt.Println("Hello Mini-CRM")
+	menu.DisplayMenu()
 }
