@@ -16,7 +16,7 @@ func GetUsers() {
 		return
 	}
 
-	fmt.Println("\n📋 Liste des contacts :")
+	fmt.Println("\n📋 Liste des utilisateurs :")
 	for _, user := range ListUsers {
 		fmt.Printf("ID: %d | Nom: %s | Email: %s\n", user.Id, user.Name, user.Email)
 	}
