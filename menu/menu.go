@@ -36,6 +36,16 @@ func DisplayMenu() {
 			crudcontact.Add(newUser)
 		case 2:
 			crudcontact.GetUsers()
+		case 3:
+			fmt.Print("Entrez l'Id d'utilisateur a supprimer : ")
+			i_indexStr, _ := reader.ReadString('\n')
+			i_indexStr = strings.TrimSpace(i_indexStr)
+			i_index, err := strconv.Atoi(i_indexStr)
+			if err != nil {
+				fmt.Println("❌ Id invalide, veuillez entrer un nombre entier.")
+				continue
+			}
+			crudcontact.DeleteUser(i_index)
 		case 5:
 			fmt.Println("Fermeture...")
 			return

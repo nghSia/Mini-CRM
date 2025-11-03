@@ -27,3 +27,15 @@ func Add(p_user user.User) {
 	p_user.Id = nextID
 	ListUsers[p_user.Id] = p_user
 }
+
+func DeleteUser(p_id int) {
+	_, exists := ListUsers[p_id]
+
+	if !exists {
+		fmt.Printf("❌ Aucun utilisateur trouvé avec l’ID %d\n", p_id)
+		return
+	}
+
+	delete(ListUsers, p_id)
+	fmt.Printf("✅ Utilisateur avec l’ID %d supprimé avec succès\n", p_id)
+}
