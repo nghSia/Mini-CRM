@@ -3,10 +3,11 @@ package crudcontact
 import (
 	"fmt"
 
-	"github.com/nghSia/Mini-CRM/user"
+	"github.com/nghSia/Mini-CRM/contact"
 )
 
-var ListUsers = make(map[int]user.User)
+// une seule instance en mémoire, tout le monde modifie la même.
+var ListUsers = make(map[int]*contact.Contact)
 
 var nextID int
 
@@ -22,24 +23,32 @@ func GetUsers() {
 	}
 }
 
-func AddUser(p_user user.User) {
+func AddContactToList(p_user contact.Contact) {
 	nextID++
 	p_user.Id = nextID
-	ListUsers[p_user.Id] = p_user
+	userToAdd, err := p_user.Add()
+	if err != nil {
+		fmt.Printf("❌", err)
+		return
+	}
+	ListUsers[nextID] = userToAdd
 }
 
-func UpdateUser(p_id int, p_user user.User) {
-	_, exists := ListUsers[p_id]
+func UpdateContactList(id int, p_user contact.Contact) {
+	foundContact, exists := ListUsers[id]
 
 	if !exists {
-		fmt.Printf("❌ Aucun utilisateur trouvé avec l’ID %d\n", p_id)
+		fmt.Printf("❌ Aucun utilisateur trouvé avec l’ID %d\n", id)
 		return
 	}
 
-	p_user.Id = p_id
-	ListUsers[p_id] = p_user
+	_, err := foundContact.Update(p_user.Name, p_user.Email)
+	if err != nil {
+		fmt.Println("❌", err)
+		return
+	}
 
-	fmt.Printf("✅ Utilisateur avec l’ID %d mis à jour avec succès\n", p_id)
+	fmt.Printf("✅ Utilisateur avec l’ID %d mis à jour avec succès\n", id)
 }
 
 func DeleteUser(p_id int) {
