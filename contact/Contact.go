@@ -2,17 +2,12 @@ package contact
 
 import (
 	"errors"
-	"fmt"
 )
 
 type Contact struct {
 	Id    int
 	Name  string
 	Email string
-}
-
-func (c Contact) GetUserInfo() string {
-	return fmt.Sprintf("%s , %s , %s", c.Id, c.Name, c.Email)
 }
 
 func (c *Contact) Add() (*Contact, error) {

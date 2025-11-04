@@ -28,7 +28,7 @@ func AddContactToList(p_user contact.Contact) {
 	p_user.Id = nextID
 	userToAdd, err := p_user.Add()
 	if err != nil {
-		fmt.Printf("❌", err)
+		fmt.Println("❌", err)
 		return
 	}
 	ListUsers[nextID] = userToAdd
