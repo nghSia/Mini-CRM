@@ -1,8 +1,7 @@
 # Projet : Mini CRM
 
 ## Collaborateurs
-
-FAZER Nino - TRAN Huu-Nghia
+TRAN Huu-Nghia
 
 ---
 
@@ -29,13 +28,19 @@ go version
 ```bash
 Mini-CRM/
 │
+├── go.mod                # Fichier de configuration du module Go
 ├── main.go               # Point d’entrée de l’application
-├── menu/
-│   └── menu.go           # Menu interactif (Add, Get, Update, Delete)
-├── crudcontact/
-│   └── crudcontact.go    # Logique CRUD et gestion de la map users
-└── user/
-    └── user.go           # Définition de la struct User
+├── main_test.go          # Tests unitaires pour main.go
+│
+├── internal/
+│   ├── app/
+│   │   └── app.go        # Logique principale de l’application
+│   │
+│   └── storage/
+│       ├── memory.go     # Stockage en mémoire (implémentation)
+│       └── storage.go    # Interface de stockage et logique associée
+│
+└── README.md             # Documentation du projet
 ```
 # Exécution normale
 go run .
@@ -44,9 +49,10 @@ go run .
 === Mini-CRM Menu ===
 1) Ajouter un contact
 2) Lister les contacts
-3) Supprimer un contact
+3) Lister les informaton d'un seul contact
 4) Mettre à jour un contact
-5) Quitter
+5) Supprimer un contact
+6) Quitter
 
 # Fonctionnalités 
 

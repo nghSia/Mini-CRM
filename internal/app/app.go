@@ -115,18 +115,19 @@ func handleGetAllContact(store storage.Storer) {
 	}
 
 	for _, contact := range contacts {
+		fmt.Println("📋 Liste des utilisateurs :")
 		fmt.Printf("ID: %d | Nom: %s | Email: %s\n", contact.Id, contact.Name, contact.Email)
 	}
 }
 
 func handleGetContactByID(reader *bufio.Reader, store storage.Storer) {
-	fmt.Print("Entrez l'Id d'utilisateur à afficher : ") // Correction du message
+	fmt.Print("Entrez l'Id d'utilisateur à afficher : ")
 	i_indexStr, _ := reader.ReadString('\n')
 	i_indexStr = strings.TrimSpace(i_indexStr)
 	i_index, err := strconv.Atoi(i_indexStr)
 
 	if err != nil {
-		fmt.Println("❌ Id invalide, veuillez entrer un nombre entier.") // Changé Printf en Println
+		fmt.Println("❌ Id invalide, veuillez entrer un nombre entier.")
 		return
 	}
 
