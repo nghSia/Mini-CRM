@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	crudcontact "github.com/nghSia/Mini-CRM/crudContact"
-	"github.com/nghSia/Mini-CRM/user"
+	"github.com/nghSia/Mini-CRM/contact"
+	"github.com/nghSia/Mini-CRM/crudcontact"
 )
 
 // DisplayMenu affiche le menu principal de l'application
@@ -32,8 +32,8 @@ func DisplayMenu() {
 			fmt.Print("Entrez le mail utilisateur : ")
 			i_userMail, _ := reader.ReadString('\n')
 			i_userMail = strings.TrimSpace(i_userMail)
-			newUser := user.User{Name: i_username, Email: i_userMail}
-			crudcontact.AddUser(newUser)
+			newUser := contact.Contact{Name: i_username, Email: i_userMail}
+			crudcontact.AddContactToList(newUser)
 		case 2:
 			crudcontact.GetUsers()
 		case 3:
@@ -61,7 +61,7 @@ func DisplayMenu() {
 			fmt.Print("Entrez le nouveau mail : ")
 			i_email, _ := reader.ReadString('\n')
 			i_email = strings.TrimSpace(i_email)
-			crudcontact.UpdateUser(i_index, user.User{Name: i_name, Email: i_email})
+			crudcontact.UpdateContactList(i_index, contact.Contact{Name: i_name, Email: i_email})
 		case 5:
 			fmt.Println("Fermeture...")
 			return

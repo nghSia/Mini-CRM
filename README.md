@@ -32,8 +32,8 @@ Mini-CRM/
 ├── main.go               # Point d’entrée de l’application
 ├── menu/
 │   └── menu.go           # Menu interactif (Add, Get, Update, Delete)
-├── crudContact/
-│   └── crudContact.go    # Logique CRUD et gestion de la map users
+├── crudcontact/
+│   └── crudcontact.go    # Logique CRUD et gestion de la map users
 └── user/
     └── user.go           # Définition de la struct User
 ```
