@@ -53,6 +53,10 @@ func handleAddContact(reader *bufio.Reader, store storage.Storer) {
 	i_userMail, _ := reader.ReadString('\n')
 	i_userMail = strings.TrimSpace(i_userMail)
 
+	if i_username == "" || i_userMail == "" {
+		fmt.Println("❌ valeurs invalides, veuillez entrer un nom entier.")
+	}
+
 	newUser := &storage.Contact{Name: i_username, Email: i_userMail}
 
 	store.Add(newUser)
@@ -65,7 +69,7 @@ func handleDeleteContact(reader *bufio.Reader, store storage.Storer) {
 	i_index, err := strconv.Atoi(i_indexStr)
 
 	if err != nil {
-		fmt.Errorf("❌ Id invalide, veuillez entrer un nombre entier.")
+		fmt.Printf("❌ Id invalide, veuillez entrer un nombre entier.")
 		return
 	}
 
