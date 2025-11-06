@@ -29,16 +29,25 @@ go version
 Mini-CRM/
 │
 ├── go.mod                # Fichier de configuration du module Go
-├── main.go               # Point d’entrée de l’application
+├── go.sum                # Fichier de dépendances
+├── main.go               # Point d'entrée de l'application
 ├── main_test.go          # Tests unitaires pour main.go
+│
+├── cmd/                  # Commandes Cobra CLI
+│   ├── root.go           # Commande racine
+│   ├── add.go            # Commande pour ajouter un contact
+│   ├── update.go         # Commande pour mettre à jour un contact
+│   ├── delete.go         # Commande pour supprimer un contact
+│   ├── get.go            # Commande pour obtenir un contact par ID
+│   └── getAll.go         # Commande pour lister tous les contacts
 │
 ├── internal/
 │   ├── app/
-│   │   └── app.go        # Logique principale de l’application
+│   │   └── app.go        # Logique métier et handlers
 │   │
 │   └── storage/
-│       ├── memory.go     # Stockage en mémoire (implémentation)
-│       └── storage.go    # Interface de stockage et logique associée
+│       ├── storage.go    # Interface Storer et définition Contact
+│       └── memory.go     # Implémentation en mémoire du Storer
 │
 └── README.md             # Documentation du projet
 ```
@@ -53,7 +62,7 @@ go run .
 4) Mettre à jour un contact
 5) Supprimer un contact
 6) Quitter
-
+=====================
 # Fonctionnalités 
 
 ## Ajout utilisateur 
@@ -91,6 +100,240 @@ ID: 2 | Nom: Bob   | Email: bob@mail.com
 ## Delete utilisateur 
 ```bash
 4️⃣ Supprimer un contact
-→ Entrer l’ID du contact à supprimer :
-✅ Utilisateur avec l’ID 2 supprimé avec succès
+→ Entrer l'ID du contact à supprimer :
+✅ Utilisateur avec l'ID 2 supprimé avec succès
 ```
+
+---
+
+## 🚀 CLI avec Cobra - Guide des Commandes
+
+L'application Mini-CRM est maintenant disponible en tant qu'outil CLI utilisant **Cobra**. Vous pouvez l'utiliser de deux manières :
+- **Mode interactif** : L'application vous guide avec des prompts
+- **Mode CLI** : Utilisation directe avec des sous-commandes et flags
+
+### Compilation de l'exécutable
+
+```bash
+# Compiler l'application
+go build -o gomincrm
+
+# Rendre l'exécutable (Unix/Linux/macOS)
+chmod +x gomincrm
+
+# Exécuter
+./gomincrm
+```
+
+### 📋 Aide et Documentation
+
+```bash
+# Aide générale - Liste toutes les commandes disponibles
+./gomincrm --help
+./gomincrm -h
+
+# Aide sur une commande spécifique
+./gomincrm [commande] --help
+./gomincrm [commande] -h
+
+# Exemples :
+./gomincrm add --help
+./gomincrm update --help
+./gomincrm delete --help
+```
+
+---
+
+## Sous-commandes disponibles
+
+### 1️⃣ **add** - Ajouter un contact
+
+Ajoute un nouveau contact au système CRM.
+
+**2 modes d'utilisation :**
+
+#### Mode interactif (sans flags)
+```bash
+./gomincrm add
+```
+→ L'application vous demandera le nom et l'email
+
+#### Mode avec flags
+```bash
+./gomincrm add -n "Nom" -e "email@example.com"
+./gomincrm add --name "Nom" --email "email@example.com"
+```
+
+**Flags disponibles :**
+| Flag | Raccourci | Description | Obligatoire |
+|------|-----------|-------------|-------------|
+| `--name` | `-n` | Nom du contact | Oui (en mode flags) |
+| `--email` | `-e` | Email du contact | Oui (en mode flags) |
+
+**Exemples d'utilisation :**
+```bash
+./gomincrm add                                      # Mode interactif
+./gomincrm add -n "Alice" -e "alice@mail.com"       # Mode flags
+./gomincrm add --name "Bob" --email "bob@test.com"  # Mode flags (format long)
+```
+
+---
+
+### 2️⃣ **list** - Lister tous les contacts
+
+Affiche la liste complète de tous les contacts enregistrés.
+
+**Utilisation :**
+```bash
+./gomincrm list
+```
+
+**Flags disponibles :**
+Aucun flag pour cette commande.
+
+---
+
+### 3️⃣ **get** - Obtenir un contact par ID
+
+Affiche les informations détaillées d'un contact spécifique.
+
+**2 modes d'utilisation :**
+
+#### Mode avec argument
+```bash
+./gomincrm get [ID]
+```
+
+#### Mode interactif (sans argument)
+```bash
+./gomincrm get
+```
+→ L'application vous demandera l'ID du contact
+
+**Exemples d'utilisation :**
+```bash
+./gomincrm get 1      # Affiche le contact avec l'ID 1
+./gomincrm get 5      # Affiche le contact avec l'ID 5
+./gomincrm get        # Mode interactif
+```
+
+---
+
+### 4️⃣ **update** - Mettre à jour un contact
+
+Met à jour le nom et/ou l'email d'un contact existant.
+
+**2 modes d'utilisation :**
+
+#### Mode interactif (sans flags)
+```bash
+./gomincrm update
+```
+→ L'application vous guidera pour entrer l'ID et les nouvelles informations
+
+#### Mode avec flags
+```bash
+./gomincrm update -i [ID] -n "Nouveau nom" -e "nouvel@email.com"
+./gomincrm update --id [ID] --name "Nouveau nom" --email "nouvel@email.com"
+```
+
+**Flags disponibles :**
+| Flag | Raccourci | Description | Obligatoire |
+|------|-----------|-------------|-------------|
+| `--id` | `-i` | ID du contact à mettre à jour | Oui (en mode flags) |
+| `--name` | `-n` | Nouveau nom du contact | Non* |
+| `--email` | `-e` | Nouvel email du contact | Non* |
+
+*Au moins un des deux champs (name ou email) doit être fourni
+
+**Exemples d'utilisation :**
+```bash
+./gomincrm update                                    # Mode interactif
+./gomincrm update -i 1 -n "Jane"                     # Mettre à jour uniquement le nom
+./gomincrm update -i 1 -e "jane@newmail.com"         # Mettre à jour uniquement l'email
+./gomincrm update -i 1 -n "Jane" -e "jane@mail.com"  # Mettre à jour les deux
+```
+
+---
+
+### 5️⃣ **delete** - Supprimer un contact
+
+Supprime un contact du système.
+
+**2 modes d'utilisation :**
+
+#### Mode avec argument
+```bash
+./gomincrm delete [ID]
+```
+
+#### Mode interactif (sans argument)
+```bash
+./gomincrm delete
+```
+→ L'application vous demandera l'ID du contact à supprimer
+
+**Flags disponibles :**
+| Flag | Raccourci | Description | Obligatoire |
+|------|-----------|-------------|-------------|
+| `--id` | `-i` | ID du contact à supprimer | Non (peut être passé comme argument) |
+
+**Exemples d'utilisation :**
+```bash
+./gomincrm delete 1       # Supprime le contact avec l'ID 1
+./gomincrm delete 5       # Supprime le contact avec l'ID 5
+./gomincrm delete         # Mode interactif
+./gomincrm delete -i 3    # Avec flag (alternative)
+```
+
+---
+
+## 📊 Exemple de workflow complet
+
+```bash
+# 1. Ajouter plusieurs contacts
+./gomincrm add -n "Alice Martin" -e "alice@mail.com"
+./gomincrm add -n "Bob Smith" -e "bob@company.com"
+./gomincrm add -n "Charlie Brown" -e "charlie@test.com"
+
+# 2. Lister tous les contacts
+./gomincrm list
+
+# 3. Voir les détails d'un contact spécifique
+./gomincrm get 2
+
+# 4. Mettre à jour un contact
+./gomincrm update -i 2 -e "bob.smith@newcompany.com"
+
+# 5. Mettre à jour nom et email
+./gomincrm update -i 1 -n "Alice Johnson" -e "alice.j@newmail.com"
+
+# 6. Supprimer un contact
+./gomincrm delete 3
+
+# 7. Vérifier la liste finale
+./gomincrm list
+```
+
+---
+
+## � Récapitulatif des commandes
+
+| Commande | Description | Mode interactif | Flags principaux |
+|----------|-------------|-----------------|------------------|
+| `add` | Ajouter un contact | ✅ | `-n`, `-e` |
+| `list` | Lister tous les contacts | ❌ | Aucun |
+| `get [ID]` | Obtenir un contact | ✅ | Argument ID |
+| `update` | Mettre à jour un contact | ✅ | `-i`, `-n`, `-e` |
+| `delete [ID]` | Supprimer un contact | ✅ | Argument ID ou `-i` |
+
+---
+
+## � Points importants
+
+- **Mode interactif** : Lancez la commande sans flags, l'application vous guidera
+- **Mode CLI** : Utilisez les flags pour des opérations rapides ou de l'automatisation
+- **Aide contextuelle** : Utilisez `--help` ou `-h` après n'importe quelle commande pour voir sa documentation
+- Les **IDs** sont générés automatiquement et commencent à 1
+- Les **données** sont stockées en mémoire et perdues à la fermeture
+- Tous les **messages** sont en anglais
