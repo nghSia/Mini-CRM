@@ -24,11 +24,9 @@ Examples:
 		store := GetStore()
 		reader := GetReader()
 
-		// Get flags via cmd.Flags()
 		name, _ := cmd.Flags().GetString("name")
 		email, _ := cmd.Flags().GetString("email")
 
-		// flags mode
 		if name != "" && email != "" {
 			contact := &storage.Contact{Name: name, Email: email}
 			if err := store.Add(contact); err != nil {
@@ -38,7 +36,6 @@ Examples:
 			return nil
 		}
 
-		// otherwise → interactive mode
 		app.HandleAddContact(reader, store)
 		return nil
 	},

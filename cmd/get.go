@@ -36,6 +36,7 @@ Examples:
 				return nil
 			}
 
+			fmt.Println("📋 Contact's informations :")
 			fmt.Printf("ID: %d, Name: %s, Email: %s\n", contact.Id, contact.Name, contact.Email)
 			return nil
 		}

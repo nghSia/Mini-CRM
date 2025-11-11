@@ -5,11 +5,15 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/nghSia/Mini-CRM/internal/app"
 	"github.com/nghSia/Mini-CRM/internal/storage"
 	"github.com/spf13/cobra"
 )
 
 var (
+	store  storage.Storer
+	reader *bufio.Reader
+
 	rootCmd = &cobra.Command{
 		Use:   "gomincrm",
 		Short: "A CLI tool to manage contacts in Mini-CRM",
@@ -24,17 +28,14 @@ Examples:
   gomincrm get 1            # Get contact with ID 1
   gomincrm update 1 -n "Jane"  # Update contact name
   gomincrm delete 1         # Delete contact with ID 1`,
-		// Run: func(cmd *cobra.Command, args []string) {
-		// 	app.Run(store)
-		// },
+		Run: func(cmd *cobra.Command, args []string) {
+			app.Run(store)
+		},
 	}
-
-	store  storage.Storer
-	reader *bufio.Reader
 )
 
 func Execute() {
-	store = storage.NewMemoryStore()
+	store = storage.NewJsonStore()
 	reader = bufio.NewReader(os.Stdin)
 
 	if err := rootCmd.Execute(); err != nil {
@@ -46,6 +47,4 @@ func Execute() {
 func GetStore() storage.Storer { return store }
 func GetReader() *bufio.Reader { return reader }
 
-// Fonction lancé automatiquement par Go
-// Si jamais on a des flags sur la commande principal, mettre ici. Sinon laisser vide.
 func intit() {}

@@ -8,8 +8,13 @@ TRAN Huu-Nghia
 ## 🧠 Description
 
 Mini-CRM est une application minimale de gestion de contacts développée en **Go**.  
-Elle permet d’ajouter, afficher, mettre à jour et supprimer des utilisateurs via un **menu interactif**, ou directement en ligne de commande à l’aide de **flags**.  
-Les données sont stockées dans une **map en mémoire** et sont perdues à chaque fermeture du programme.
+Elle permet d'ajouter, afficher, mettre à jour et supprimer des utilisateurs via un **menu interactif**, ou directement en ligne de commande à l'aide de **flags**.  
+
+**Persistance des données :**
+- Les données sont maintenant **sauvegardées automatiquement** dans un fichier `contacts.json` à la racine du projet
+- L'application charge automatiquement les contacts existants au démarrage
+- Toutes les modifications (ajout, mise à jour, suppression) sont immédiatement persistées dans le fichier JSON
+- L'ancienne implémentation en mémoire (`MemoryStore`) est conservée mais n'est plus utilisée par défaut
 
 ---
 
@@ -30,11 +35,12 @@ Mini-CRM/
 │
 ├── go.mod                # Fichier de configuration du module Go
 ├── go.sum                # Fichier de dépendances
+├── contacts.json         # 💾 Fichier de persistance des contacts (généré automatiquement)
 ├── main.go               # Point d'entrée de l'application
 ├── main_test.go          # Tests unitaires pour main.go
 │
 ├── cmd/                  # Commandes Cobra CLI
-│   ├── root.go           # Commande racine
+│   ├── root.go           # Commande racine (initialise JSONStore)
 │   ├── add.go            # Commande pour ajouter un contact
 │   ├── update.go         # Commande pour mettre à jour un contact
 │   ├── delete.go         # Commande pour supprimer un contact
@@ -45,12 +51,21 @@ Mini-CRM/
 │   ├── app/
 │   │   └── app.go        # Logique métier et handlers
 │   │
+│   ├── config/
+│   │   └── config.go     # Gestion de la sérialisation/désérialisation JSON
+│   │
 │   └── storage/
 │       ├── storage.go    # Interface Storer et définition Contact
-│       └── memory.go     # Implémentation en mémoire du Storer
+│       ├── memory.go     # ⚠️ Implémentation en mémoire (conservée mais non utilisée)
+│       └── json.go       # ✅ Implémentation avec persistance JSON (utilisée par défaut)
 │
 └── README.md             # Documentation du projet
 ```
+
+**Note sur l'architecture :**
+- L'interface `Storer` permet de basculer facilement entre différentes implémentations de stockage
+- `JSONStore` est actuellement utilisé par défaut (voir `cmd/root.go` ligne 38)
+- `MemoryStore` est conservé pour référence ou tests mais n'est plus le store par défaut
 # Exécution normale
 go run .
 
@@ -111,6 +126,34 @@ ID: 2 | Nom: Bob   | Email: bob@mail.com
 L'application Mini-CRM est maintenant disponible en tant qu'outil CLI utilisant **Cobra**. Vous pouvez l'utiliser de deux manières :
 - **Mode interactif** : L'application vous guide avec des prompts
 - **Mode CLI** : Utilisation directe avec des sous-commandes et flags
+
+### 💾 Persistance des données
+
+**Toutes les opérations sont automatiquement sauvegardées** :
+- Le fichier `contacts.json` est créé automatiquement à la racine du projet au premier ajout
+- Les contacts sont chargés automatiquement au démarrage de l'application
+- Chaque modification (ajout, mise à jour, suppression) est immédiatement persistée
+- Les données survivent à la fermeture de l'application
+
+**Emplacement du fichier :**
+```bash
+# Le fichier est créé dans le répertoire de travail actuel
+./contacts.json
+
+# Exemple de contenu :
+[
+  {
+    "id": 1,
+    "name": "Alice Martin",
+    "email": "alice@mail.com"
+  },
+  {
+    "id": 2,
+    "name": "Bob Smith",
+    "email": "bob@company.com"
+  }
+]
+```
 
 ### Compilation de l'exécutable
 
@@ -329,11 +372,25 @@ Supprime un contact du système.
 
 ---
 
-## � Points importants
+## 🔑 Points importants
 
 - **Mode interactif** : Lancez la commande sans flags, l'application vous guidera
 - **Mode CLI** : Utilisez les flags pour des opérations rapides ou de l'automatisation
 - **Aide contextuelle** : Utilisez `--help` ou `-h` après n'importe quelle commande pour voir sa documentation
 - Les **IDs** sont générés automatiquement et commencent à 1
-- Les **données** sont stockées en mémoire et perdues à la fermeture
+- Les **données** sont stockées dans `contacts.json` et **persistantes entre les sessions**
+- Le fichier JSON est créé automatiquement dans le répertoire de travail actuel
 - Tous les **messages** sont en anglais
+
+### 🔄 Changement de mode de stockage
+
+Si vous souhaitez revenir au mode en mémoire (non persistant) :
+1. Ouvrez `cmd/root.go`
+2. Ligne 38, remplacez `storage.NewJsonStore()` par `storage.NewMemoryStore()`
+3. Recompilez avec `go build -o gomincrm`
+
+**Comparaison des modes :**
+| Mode | Fichier | Persistance | Utilisation |
+|------|---------|-------------|-------------|
+| `JSONStore` | `json.go` | ✅ Oui (contacts.json) | **Par défaut** |
+| `MemoryStore` | `memory.go` | ❌ Non (perdu à la fermeture) | Tests/Développement |

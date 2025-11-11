@@ -24,7 +24,7 @@ Examples:
 			return err
 		}
 
-		fmt.Println("List of contacts :")
+		fmt.Println("📋 Users list:")
 		for _, contact := range contacts {
 			fmt.Printf("ID: %d, Name: %s, Email: %s\n", contact.Id, contact.Name, contact.Email)
 		}

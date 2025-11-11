@@ -1,6 +1,9 @@
 package storage
 
-import "fmt"
+import (
+	"fmt"
+	"sort"
+)
 
 type MemoryStore struct {
 	contacts map[int]*Contact
@@ -30,6 +33,11 @@ func (ms *MemoryStore) GetAll() ([]*Contact, error) {
 	for _, contact := range ms.contacts {
 		contacts = append(contacts, contact)
 	}
+
+	sort.Slice(contacts, func(i, j int) bool {
+		return contacts[i].Id < contacts[j].Id
+	})
+
 	return contacts, nil
 }
 
