@@ -35,7 +35,7 @@ Examples:
 )
 
 func Execute() {
-	store = storage.NewJsonStore()
+	store = storage.NewGORMStore()
 	reader = bufio.NewReader(os.Stdin)
 
 	if err := rootCmd.Execute(); err != nil {

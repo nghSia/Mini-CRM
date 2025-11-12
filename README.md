@@ -11,10 +11,11 @@ Mini-CRM est une application minimale de gestion de contacts développée en **G
 Elle permet d'ajouter, afficher, mettre à jour et supprimer des utilisateurs via un **menu interactif**, ou directement en ligne de commande à l'aide de **flags**.  
 
 **Persistance des données :**
-- Les données sont maintenant **sauvegardées automatiquement** dans un fichier `contacts.json` à la racine du projet
+- Les données sont maintenant **stockées dans une base de données SQLite** via l'ORM **GORM**
+- Le fichier de base de données `contacts.db` est créé automatiquement à la racine du projet
 - L'application charge automatiquement les contacts existants au démarrage
-- Toutes les modifications (ajout, mise à jour, suppression) sont immédiatement persistées dans le fichier JSON
-- L'ancienne implémentation en mémoire (`MemoryStore`) est conservée mais n'est plus utilisée par défaut
+- Toutes les modifications (ajout, mise à jour, suppression) sont immédiatement persistées dans la base de données
+- Les anciennes implémentations (`MemoryStore`, `JSONStore`) sont conservées mais ne sont plus utilisées par défaut
 
 ---
 
@@ -35,12 +36,12 @@ Mini-CRM/
 │
 ├── go.mod                # Fichier de configuration du module Go
 ├── go.sum                # Fichier de dépendances
-├── contacts.json         # 💾 Fichier de persistance des contacts (généré automatiquement)
+├── contacts.db           # 💾 Base de données SQLite (générée automatiquement)
 ├── main.go               # Point d'entrée de l'application
 ├── main_test.go          # Tests unitaires pour main.go
 │
 ├── cmd/                  # Commandes Cobra CLI
-│   ├── root.go           # Commande racine (initialise JSONStore)
+│   ├── root.go           # Commande racine (initialise GORMStore)
 │   ├── add.go            # Commande pour ajouter un contact
 │   ├── update.go         # Commande pour mettre à jour un contact
 │   ├── delete.go         # Commande pour supprimer un contact
@@ -57,15 +58,16 @@ Mini-CRM/
 │   └── storage/
 │       ├── storage.go    # Interface Storer et définition Contact
 │       ├── memory.go     # ⚠️ Implémentation en mémoire (conservée mais non utilisée)
-│       └── json.go       # ✅ Implémentation avec persistance JSON (utilisée par défaut)
+│       ├── json.go       # ⚠️ Implémentation avec persistance JSON (conservée mais non utilisée)
+│       └── gorm.go       # ✅ Implémentation avec GORM/SQLite (utilisée par défaut)
 │
 └── README.md             # Documentation du projet
 ```
 
 **Note sur l'architecture :**
 - L'interface `Storer` permet de basculer facilement entre différentes implémentations de stockage
-- `JSONStore` est actuellement utilisé par défaut (voir `cmd/root.go` ligne 38)
-- `MemoryStore` est conservé pour référence ou tests mais n'est plus le store par défaut
+- `GORMStore` est actuellement utilisé par défaut (voir `cmd/root.go` ligne 38)
+- `MemoryStore` et `JSONStore` sont conservés pour référence ou tests mais ne sont plus utilisés par défaut
 # Exécution normale
 go run .
 
@@ -130,29 +132,21 @@ L'application Mini-CRM est maintenant disponible en tant qu'outil CLI utilisant 
 ### 💾 Persistance des données
 
 **Toutes les opérations sont automatiquement sauvegardées** :
-- Le fichier `contacts.json` est créé automatiquement à la racine du projet au premier ajout
-- Les contacts sont chargés automatiquement au démarrage de l'application
-- Chaque modification (ajout, mise à jour, suppression) est immédiatement persistée
+- La base de données SQLite `contacts.db` est créée automatiquement à la racine du projet au premier lancement
+- Les contacts sont chargés automatiquement au démarrage de l'application via GORM
+- Chaque modification (ajout, mise à jour, suppression) est immédiatement persistée dans la base de données
 - Les données survivent à la fermeture de l'application
+- GORM gère automatiquement les migrations de schéma
 
-**Emplacement du fichier :**
+**Emplacement de la base de données :**
 ```bash
-# Le fichier est créé dans le répertoire de travail actuel
-./contacts.json
+# Le fichier SQLite est créé dans le répertoire de travail actuel
+./contacts.db
 
-# Exemple de contenu :
-[
-  {
-    "id": 1,
-    "name": "Alice Martin",
-    "email": "alice@mail.com"
-  },
-  {
-    "id": 2,
-    "name": "Bob Smith",
-    "email": "bob@company.com"
-  }
-]
+# Structure de la table (gérée automatiquement par GORM) :
+# - Id (INTEGER PRIMARY KEY AUTOINCREMENT)
+# - Name (VARCHAR(100) UNIQUE NOT NULL)
+# - Email (VARCHAR(100) UNIQUE NOT NULL)
 ```
 
 ### Compilation de l'exécutable
@@ -384,13 +378,14 @@ Supprime un contact du système.
 
 ### 🔄 Changement de mode de stockage
 
-Si vous souhaitez revenir au mode en mémoire (non persistant) :
+Si vous souhaitez changer le mode de stockage :
 1. Ouvrez `cmd/root.go`
-2. Ligne 38, remplacez `storage.NewJsonStore()` par `storage.NewMemoryStore()`
+2. Ligne 38, remplacez `storage.NewGORMStore()` par le store de votre choix
 3. Recompilez avec `go build -o gomincrm`
 
 **Comparaison des modes :**
-| Mode | Fichier | Persistance | Utilisation |
-|------|---------|-------------|-------------|
-| `JSONStore` | `json.go` | ✅ Oui (contacts.json) | **Par défaut** |
-| `MemoryStore` | `memory.go` | ❌ Non (perdu à la fermeture) | Tests/Développement |
+| Mode | Fichier | Persistance | Technologie | Utilisation |
+|------|---------|-------------|-------------|-------------|
+| `GORMStore` | `gorm.go` | ✅ Oui (contacts.db) | SQLite + ORM | **Par défaut** |
+| `JSONStore` | `json.go` | ✅ Oui (contacts.json) | JSON natif | Alternative simple |
+| `MemoryStore` | `memory.go` | ❌ Non (perdu à la fermeture) | Map en mémoire | Tests/Développement |
