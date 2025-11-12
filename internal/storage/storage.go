@@ -16,4 +16,4 @@ type Storer interface {
 	Delete(id int) error
 }
 
-var ErrContactNotFound = func(id int) error { return fmt.Errorf("Contact avec l'ID %d non trouvé", id) }
+var ErrContactNotFound = func(id int) error { return fmt.Errorf("Contact with ID %d not found", id) }

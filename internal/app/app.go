@@ -10,33 +10,33 @@ import (
 	"github.com/nghSia/Mini-CRM/internal/storage"
 )
 
-// DisplayMenu affiche le menu principal de l'application
 func Run(store storage.Storer) {
 	reader := bufio.NewReader(os.Stdin)
 	for {
-		fmt.Println("\n=== Mini-CRM Menu ===")
-		fmt.Println("1) : Ajouter un contact")
-		fmt.Println("2) : Lister tous les contacts")
-		fmt.Println("3) : Liste les info d'un contact")
-		fmt.Println("4) : Mettre a jour un contact")
-		fmt.Println("5) : Supprimer un contact")
-		fmt.Println("6) Quitter l'application")
+		fmt.Println("\n========== Mini-CRM Menu ==========")
+		fmt.Println("1) : Add a contact")
+		fmt.Println("2) : List all contacts")
+		fmt.Println("3) : Show contact information")
+		fmt.Println("4) : Update a contact")
+		fmt.Println("5) : Delete a contact")
+		fmt.Print("6) Quit application")
+		fmt.Println("\n===================================")
 
-		choice := readInt(reader, "Entrez vos choix : ")
+		choice := readInt(reader, "Enter your choice: ")
 
 		switch choice {
 		case 1:
-			handleAddContact(reader, store)
+			HandleAddContact(reader, store)
 		case 2:
-			handleGetAllContact(store)
+			HandleGetAllContact(store)
 		case 3:
-			handleGetContactByID(reader, store)
+			HandleGetContactByID(reader, store)
 		case 4:
-			handleUpdateContact(reader, store)
+			HandleUpdateContact(reader, store)
 		case 5:
-			handleDeleteContact(reader, store)
+			HandleDeleteContact(reader, store)
 		case 6:
-			fmt.Println("Fermeture...")
+			fmt.Println("Closing...")
 			return
 		default:
 			fmt.Println(choice)
@@ -44,32 +44,38 @@ func Run(store storage.Storer) {
 	}
 }
 
-func handleAddContact(reader *bufio.Reader, store storage.Storer) {
-	fmt.Print("Entrez nom utilisateur : ")
+func HandleAddContact(reader *bufio.Reader, store storage.Storer) {
+	fmt.Print("Enter username: ")
 	i_username, _ := reader.ReadString('\n')
 	i_username = strings.TrimSpace(i_username)
 
-	fmt.Print("Entrez le mail utilisateur : ")
+	fmt.Print("Enter user email: ")
 	i_userMail, _ := reader.ReadString('\n')
 	i_userMail = strings.TrimSpace(i_userMail)
 
 	if i_username == "" || i_userMail == "" {
-		fmt.Println("❌ valeurs invalides, veuillez entrer un nom entier.")
+		fmt.Println("❌ Invalid values, please enter a valid name and email.")
+		return
 	}
 
 	newUser := &storage.Contact{Name: i_username, Email: i_userMail}
 
-	store.Add(newUser)
+	err := store.Add(newUser)
+	if err != nil {
+		fmt.Printf("❌ Error adding contact: %v\n", err)
+		return
+	}
+	fmt.Printf("✅ Contact added successfully: %s (%s)\n", i_username, i_userMail)
 }
 
-func handleDeleteContact(reader *bufio.Reader, store storage.Storer) {
-	fmt.Print("Entrez l'Id d'utilisateur a supprimer : ")
+func HandleDeleteContact(reader *bufio.Reader, store storage.Storer) {
+	fmt.Print("Enter user ID to delete: ")
 	i_indexStr, _ := reader.ReadString('\n')
 	i_indexStr = strings.TrimSpace(i_indexStr)
 	i_index, err := strconv.Atoi(i_indexStr)
 
 	if err != nil {
-		fmt.Printf("❌ Id invalide, veuillez entrer un nombre entier.")
+		fmt.Printf("❌ Invalid ID, please enter a valid ID.")
 		return
 	}
 
@@ -78,11 +84,11 @@ func handleDeleteContact(reader *bufio.Reader, store storage.Storer) {
 		fmt.Println(err.Error())
 		return
 	}
-	fmt.Println("✅ Contact supprimé avec succès")
+	fmt.Println("✅ Contact deleted successfully")
 }
 
-func handleUpdateContact(reader *bufio.Reader, store storage.Storer) {
-	fmt.Print("Entrez l'Id d'utilisateur a mettre a jour : ")
+func HandleUpdateContact(reader *bufio.Reader, store storage.Storer) {
+	fmt.Print("Enter user ID to update: ")
 	i_indexStr, _ := reader.ReadString('\n')
 	i_indexStr = strings.TrimSpace(i_indexStr)
 	i_index, err := strconv.Atoi(i_indexStr)
@@ -90,15 +96,15 @@ func handleUpdateContact(reader *bufio.Reader, store storage.Storer) {
 	contactsLength, err := store.GetAll()
 
 	if len(contactsLength) < i_index {
-		fmt.Println("❌ Id invalide")
+		fmt.Println("❌ No matching contact found with the given ID.")
 		return
 	}
 
-	fmt.Print("Entrez le nouveau nom : ")
+	fmt.Print("Enter new name: ")
 	i_name, _ := reader.ReadString('\n')
 	i_name = strings.TrimSpace(i_name)
 
-	fmt.Print("Entrez le nouveau mail : ")
+	fmt.Print("Enter new email: ")
 	i_email, _ := reader.ReadString('\n')
 	i_email = strings.TrimSpace(i_email)
 
@@ -107,10 +113,10 @@ func handleUpdateContact(reader *bufio.Reader, store storage.Storer) {
 		fmt.Println(err.Error())
 		return
 	}
-	fmt.Println("✅ Contact mis à jour avec succès")
+	fmt.Println("✅ Contact updated successfully")
 }
 
-func handleGetAllContact(store storage.Storer) {
+func HandleGetAllContact(store storage.Storer) {
 	contacts, err := store.GetAll()
 
 	if err != nil {
@@ -119,19 +125,19 @@ func handleGetAllContact(store storage.Storer) {
 	}
 
 	for _, contact := range contacts {
-		fmt.Println("📋 Liste des utilisateurs :")
-		fmt.Printf("ID: %d | Nom: %s | Email: %s\n", contact.Id, contact.Name, contact.Email)
+		fmt.Println("📋 Users list:")
+		fmt.Printf("ID: %d | Name: %s | Email: %s\n", contact.Id, contact.Name, contact.Email)
 	}
 }
 
-func handleGetContactByID(reader *bufio.Reader, store storage.Storer) {
-	fmt.Print("Entrez l'Id d'utilisateur à afficher : ")
+func HandleGetContactByID(reader *bufio.Reader, store storage.Storer) {
+	fmt.Print("Enter user ID to display: ")
 	i_indexStr, _ := reader.ReadString('\n')
 	i_indexStr = strings.TrimSpace(i_indexStr)
 	i_index, err := strconv.Atoi(i_indexStr)
 
 	if err != nil {
-		fmt.Println("❌ Id invalide, veuillez entrer un nombre entier.")
+		fmt.Println("❌ Invalid ID, please enter a valid integer.")
 		return
 	}
 
@@ -140,10 +146,9 @@ func handleGetContactByID(reader *bufio.Reader, store storage.Storer) {
 		fmt.Println(err.Error())
 		return
 	}
-	fmt.Printf("ID: %d | Nom: %s | Email: %s\n", contact.Id, contact.Name, contact.Email)
+	fmt.Printf("ID: %d | Name: %s | Email: %s\n", contact.Id, contact.Name, contact.Email)
 }
 
-// ReadInt assure la valeur renseingé par l'utilisateur soit une valeur attendue
 func readInt(reader *bufio.Reader, inputMessage string) int {
 	for {
 		fmt.Print(inputMessage)
@@ -151,18 +156,18 @@ func readInt(reader *bufio.Reader, inputMessage string) int {
 		userInput = strings.TrimSpace(userInput)
 
 		if userInput == "" {
-			fmt.Println("❌ Veuillez entrer une valeur valide")
+			fmt.Println("❌ Please enter a valid value")
 			continue
 		}
 
 		value, err := strconv.Atoi(userInput)
 		if err != nil {
-			fmt.Println("❌ Veuillez entrer un nombre entier.")
+			fmt.Println("❌ Please enter a valid integer.")
 			continue
 		}
 
 		if value < 1 || value > 6 {
-			fmt.Println("❌ Veuillez entrer un nombre entre 1 et 6.")
+			fmt.Println("❌ Please enter a number between 1 and 6.")
 			continue
 		}
 		return value

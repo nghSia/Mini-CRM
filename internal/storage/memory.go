@@ -1,6 +1,9 @@
 package storage
 
-import "fmt"
+import (
+	"fmt"
+	"sort"
+)
 
 type MemoryStore struct {
 	contacts map[int]*Contact
@@ -23,19 +26,24 @@ func (ms *MemoryStore) Add(contact *Contact) error {
 
 func (ms *MemoryStore) GetAll() ([]*Contact, error) {
 	if len(ms.contacts) == 0 {
-		return nil, fmt.Errorf("Aucun contact pour le moment")
+		return nil, fmt.Errorf("Contact list is empty")
 	}
 
 	contacts := make([]*Contact, 0, len(ms.contacts))
 	for _, contact := range ms.contacts {
 		contacts = append(contacts, contact)
 	}
+
+	sort.Slice(contacts, func(i, j int) bool {
+		return contacts[i].Id < contacts[j].Id
+	})
+
 	return contacts, nil
 }
 
 func (ms *MemoryStore) GetById(id int) (*Contact, error) {
 	if _, ok := ms.contacts[id]; !ok {
-		return nil, fmt.Errorf("contact avec l'ID %d non trouve", id)
+		return nil, fmt.Errorf("contact with ID %d not found", id)
 	}
 
 	contact := *ms.contacts[id]
@@ -44,18 +52,26 @@ func (ms *MemoryStore) GetById(id int) (*Contact, error) {
 
 func (ms *MemoryStore) Update(id int, newName, newEmail string) error {
 	if _, ok := ms.contacts[id]; !ok {
-		return fmt.Errorf("contact avec l'ID %d non trouve", id)
+		return fmt.Errorf("contact with ID %d not found", id)
 	}
 
-	ms.contacts[id].Name = newName
-	ms.contacts[id].Email = newEmail
+	if newEmail == "" && newName == "" {
+		return fmt.Errorf("no update provided for contact with ID %d", id)
+	}
+
+	if newName != "" {
+		ms.contacts[id].Name = newName
+	}
+	if newEmail != "" {
+		ms.contacts[id].Email = newEmail
+	}
 
 	return nil
 }
 
 func (ms *MemoryStore) Delete(id int) error {
 	if _, ok := ms.contacts[id]; !ok {
-		return fmt.Errorf("contact avec l'ID %d non trouve", id)
+		return fmt.Errorf("contact with ID %d not found", id)
 	}
 
 	delete(ms.contacts, id)
