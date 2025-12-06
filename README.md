@@ -11,11 +11,11 @@ Mini-CRM est une application minimale de gestion de contacts développée en **G
 Elle permet d'ajouter, afficher, mettre à jour et supprimer des utilisateurs via un **menu interactif**, ou directement en ligne de commande à l'aide de **flags**.  
 
 **Persistance des données :**
-- Les données sont maintenant **stockées dans une base de données SQLite** via l'ORM **GORM**
-- Le fichier de base de données `contacts.db` est créé automatiquement à la racine du projet
+- Le type de stockage est **configurable via `config.yaml`** grâce à **Viper**
+- Trois modes disponibles : **GORM/SQLite** (par défaut), **JSON**, ou **Memory**
 - L'application charge automatiquement les contacts existants au démarrage
-- Toutes les modifications (ajout, mise à jour, suppression) sont immédiatement persistées dans la base de données
-- Les anciennes implémentations (`MemoryStore`, `JSONStore`) sont conservées mais ne sont plus utilisées par défaut
+- Toutes les modifications (ajout, mise à jour, suppression) sont immédiatement persistées (sauf en mode Memory)
+- **Changement de mode sans recompilation** : il suffit de modifier `config.yaml`
 
 ---
 
@@ -36,12 +36,16 @@ Mini-CRM/
 │
 ├── go.mod                # Fichier de configuration du module Go
 ├── go.sum                # Fichier de dépendances
-├── contacts.db           # 💾 Base de données SQLite (générée automatiquement)
+├── config.yaml           # ⚙️  Fichier de configuration Viper (choix du storage)
+├── contacts.json         # 📝 Fichier JSON (généré si storage=json)
 ├── main.go               # Point d'entrée de l'application
 ├── main_test.go          # Tests unitaires pour main.go
 │
+├── database/             # 📁 Dossier pour les fichiers de données
+│   └── contacts.db       # 💾 Base de données SQLite (générée si storage=gorm)
+│
 ├── cmd/                  # Commandes Cobra CLI
-│   ├── root.go           # Commande racine (initialise GORMStore)
+│   ├── root.go           # Commande racine (initialise storage via Viper)
 │   ├── add.go            # Commande pour ajouter un contact
 │   ├── update.go         # Commande pour mettre à jour un contact
 │   ├── delete.go         # Commande pour supprimer un contact
@@ -66,8 +70,9 @@ Mini-CRM/
 
 **Note sur l'architecture :**
 - L'interface `Storer` permet de basculer facilement entre différentes implémentations de stockage
-- `GORMStore` est actuellement utilisé par défaut (voir `cmd/root.go` ligne 38)
-- `MemoryStore` et `JSONStore` sont conservés pour référence ou tests mais ne sont plus utilisés par défaut
+- Le choix du storage est **configuré dynamiquement** via `config.yaml` et **Viper**
+- `GORMStore` est utilisé par défaut, mais vous pouvez passer à `JSONStore` ou `MemoryStore` sans recompiler
+- La sélection du store se fait automatiquement au démarrage via `initStore()` dans `cmd/root.go`
 # Exécution normale
 go run .
 
@@ -132,7 +137,8 @@ L'application Mini-CRM est maintenant disponible en tant qu'outil CLI utilisant 
 ### 💾 Persistance des données
 
 **Toutes les opérations sont automatiquement sauvegardées** :
-- La base de données SQLite `contacts.db` est créée automatiquement à la racine du projet au premier lancement
+- La base de données SQLite `contacts.db` est créée automatiquement dans le dossier `database/` au premier lancement
+- Le dossier `database/` est créé automatiquement s'il n'existe pas
 - Les contacts sont chargés automatiquement au démarrage de l'application via GORM
 - Chaque modification (ajout, mise à jour, suppression) est immédiatement persistée dans la base de données
 - Les données survivent à la fermeture de l'application
@@ -140,8 +146,8 @@ L'application Mini-CRM est maintenant disponible en tant qu'outil CLI utilisant 
 
 **Emplacement de la base de données :**
 ```bash
-# Le fichier SQLite est créé dans le répertoire de travail actuel
-./contacts.db
+# Le fichier SQLite est créé dans le dossier database/
+./database/contacts.db
 
 # Structure de la table (gérée automatiquement par GORM) :
 # - Id (INTEGER PRIMARY KEY AUTOINCREMENT)
@@ -372,20 +378,94 @@ Supprime un contact du système.
 - **Mode CLI** : Utilisez les flags pour des opérations rapides ou de l'automatisation
 - **Aide contextuelle** : Utilisez `--help` ou `-h` après n'importe quelle commande pour voir sa documentation
 - Les **IDs** sont générés automatiquement et commencent à 1
-- Les **données** sont stockées dans `contacts.json` et **persistantes entre les sessions**
-- Le fichier JSON est créé automatiquement dans le répertoire de travail actuel
+- Le **type de stockage** est configuré dans `config.yaml` (voir section Configuration ci-dessous)
 - Tous les **messages** sont en anglais
+
+---
+
+## ⚙️ Configuration avec Viper
+
+L'application utilise **Viper** pour gérer la configuration via le fichier `config.yaml`.
+
+### Structure du fichier config.yaml
+
+```yaml
+# Mini-CRM Configuration File
+
+# Storage backend configuration
+storage:
+  # Available types: "memory", "json", "gorm"
+  # - memory: In-memory storage (data lost on exit)
+  # - json: JSON file storage (contacts.json)
+  # - gorm: SQLite database storage (contacts.db)
+  type: "gorm"
+```
 
 ### 🔄 Changement de mode de stockage
 
-Si vous souhaitez changer le mode de stockage :
-1. Ouvrez `cmd/root.go`
-2. Ligne 38, remplacez `storage.NewGORMStore()` par le store de votre choix
-3. Recompilez avec `go build -o gomincrm`
+**Sans recompilation** : Il suffit de modifier `config.yaml` !
+
+#### Exemple 1 : Passer à JSON
+```yaml
+storage:
+  type: "json"
+```
+```bash
+./gomincrm list  # Utilisera contacts.json
+```
+
+#### Exemple 2 : Passer à Memory (tests)
+```yaml
+storage:
+  type: "memory"
+```
+```bash
+./gomincrm list  # Stockage temporaire (perdu à la fermeture)
+```
+
+#### Exemple 3 : Retour à GORM (défaut)
+```yaml
+storage:
+  type: "gorm"
+```
+```bash
+./gomincrm list  # Utilisera contacts.db
+```
+
+### Flag de configuration personnalisée
+
+Vous pouvez également spécifier un fichier de configuration différent :
+
+```bash
+./gomincrm --config /path/to/custom-config.yaml list
+```
+
+### Logs de démarrage
+
+Au lancement, l'application affiche le mode de stockage utilisé :
+
+```bash
+📄 Using config file: ./config.yaml
+🔧 Initializing storage backend: gorm
+🗄️  Using GORMStore (contacts.db)
+🔄 Trying to connect to the database database/contacts.db
+✅ Successfully connected to the database database/contacts.db
+```
 
 **Comparaison des modes :**
-| Mode | Fichier | Persistance | Technologie | Utilisation |
-|------|---------|-------------|-------------|-------------|
-| `GORMStore` | `gorm.go` | ✅ Oui (contacts.db) | SQLite + ORM | **Par défaut** |
-| `JSONStore` | `json.go` | ✅ Oui (contacts.json) | JSON natif | Alternative simple |
-| `MemoryStore` | `memory.go` | ❌ Non (perdu à la fermeture) | Map en mémoire | Tests/Développement |
+| Mode | Fichier | Persistance | Technologie | Configuration |
+|------|---------|-------------|-------------|---------------|
+| `gorm` | `gorm.go` | ✅ Oui (database/contacts.db) | SQLite + ORM | `type: "gorm"` |
+| `json` | `json.go` | ✅ Oui (contacts.json) | JSON natif | `type: "json"` |
+| `memory` | `memory.go` | ❌ Non (perdu à la fermeture) | Map en mémoire | `type: "memory"` |
+
+---
+
+## 🎯 Avantages de Viper
+
+- ✅ **Pas de recompilation nécessaire** pour changer de mode
+- ✅ **Configuration externe** séparée du code
+- ✅ **Validation automatique** des valeurs de configuration
+- ✅ **Fallback intelligent** : si le fichier n'existe pas, utilise GORM par défaut
+- ✅ **Support de multiples formats** : YAML, JSON, TOML, etc.
+- ✅ **Variables d'environnement** supportées
