@@ -3,6 +3,8 @@ package storage
 import (
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -14,12 +16,19 @@ type GORMStore struct {
 
 func NewGORMStore() *GORMStore {
 	var err error
-	dbName := "contacts.db"
-	log.Printf("🔄 Trying to connect to the database %s", dbName)
 
-	db, err := gorm.Open(sqlite.Open(dbName), &gorm.Config{})
+	// Create database directory if it doesn't exist
+	dbDir := "database"
+	if err := os.MkdirAll(dbDir, 0755); err != nil {
+		log.Fatalf("❌ Failed to create database directory: %v", err)
+	}
+
+	dbPath := filepath.Join(dbDir, "contacts.db")
+	log.Printf("🔄 Trying to connect to the database %s", dbPath)
+
+	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
 	if err != nil {
-		log.Fatalf("❌ Failed to connect to database: '%s' : %v", dbName, err)
+		log.Fatalf("❌ Failed to connect to database: '%s' : %v", dbPath, err)
 	}
 
 	err = db.AutoMigrate(&Contact{})
@@ -27,7 +36,7 @@ func NewGORMStore() *GORMStore {
 		log.Fatalf("❌ Failed to migrate database: %v", err)
 	}
 
-	log.Printf("✅ Successfully connected to the database %s", dbName)
+	log.Printf("✅ Successfully connected to the database %s", dbPath)
 	return &GORMStore{db: db}
 }
 

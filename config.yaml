@@ -1,0 +1,2 @@
+storage:
+  type: "gorm"  # ou "json" ou "memory"
