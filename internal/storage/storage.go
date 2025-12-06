@@ -1,11 +1,13 @@
 package storage
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Contact struct {
-	Id    int
-	Name  string
-	Email string
+	Id    int    `gorm:"primaryKey;autoIncrement"`
+	Name  string `gorm:"type:varchar(100);unique;not null"`
+	Email string `gorm:"type:varchar(100);unique;not null"`
 }
 
 type Storer interface {
